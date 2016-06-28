@@ -31,6 +31,7 @@ if __name__ == "__main__":
     for total in range(2000, 5500, 500):
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
+        ax1.set_title(total)
         ax2 = ax1.twinx()
         for fangyu in range(5000, 30000, 5000):
             xa = [] 

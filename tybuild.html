@@ -29,33 +29,46 @@
         user.skillAttack = parseInt($('#user_skill_attack').val());
         user.criticalValue = parseInt($('#user_critical_value').val());
         user.extraCriticalRate = parseFloat($('#user_extra_critical_rate').val());
+        user.criticalBuffRate = parseFloat($('#user_critical_buff_rate').val());
         user.criticalDamageValue = parseInt($('#user_critical_damage_value').val());
         user.extraCriticalDamageRate = parseFloat($('#user_extra_critical_damage_rate').val());
         user.minSkillDamage = parseInt($('#user_min_skill_damage').val());
         user.maxSkillDamage = parseInt($('#user_max_skill_damage').val());
         user.power = parseInt($("#user_power_potential").val()) + parseInt($("#user_power_other").val());
+        user.dex = parseInt($("#user_dex_potential").val()) + parseInt($("#user_dex_other").val());
+        user.mainStatus = $("#user_job option:selected").val();
+        user.equipDamage = Math.round(user.extraDamage / 1.1128 / (1+user.shengeAttack/100) - user.power);
+        if (user.mainStatus == "power") {
+          user.lidao = parseInt(user.power / 10) * 4;
+        } else if (user.mainStatus == "dex") {
+          user.lidao = parseInt(user.dex / 10) * 4;
+        }
 
-
-        user.lidao = parseInt(user.power / 10) * 4;
-        user.criticalRate = (user.criticalValue / 3150 + user.extraCriticalRate/100);
-        user.criticalDamage = Math.min(2, (0.5 + user.criticalDamageValue / 1050 + user.extraCriticalDamageRate/100));
+        // Calculate source data
         user.minAttack = (user.minDamage - user.extraDamage) / ((1 + user.lidao/100) * (1 + user.skillAttack/100));
         user.maxAttack = (user.maxDamage - user.extraDamage) / ((1 + user.lidao/100) * (1 + user.skillAttack/100));
-        user.equipDamage = Math.round(user.extraDamage / 1.1128 / (1+user.shengeAttack/100) - user.power);
         user.minEquipAttack = Math.round(user.minAttack / 1.1128 / (1+user.shengeAttack/100));
         user.maxEquipAttack = Math.round(user.maxAttack / 1.1128 / (1+user.shengeAttack/100));
-        user.damage = GetDamage(user);
+
+        console.log(user);
+        UpdateUser(user);
+        console.log(user);
         return user;
       }
       function UpdateUser(user) {
-        user.criticalRate = (user.criticalValue / 3150 + user.extraCriticalRate/100);
+        if (user.mainStatus == "power") {
+          user.lidao = parseInt(user.power / 10) * 4;
+        } else if (user.mainStatus == "dex") {
+          user.lidao = parseInt(user.dex / 10) * 4;
+        }
+        user.criticalRate = (user.criticalValue * (1 + user.criticalBuffRate) / 3150 + user.extraCriticalRate/100);
         user.criticalDamage = Math.min(2, (0.5 + user.criticalDamageValue / 1050 + user.extraCriticalDamageRate/100));
         user.extraDamage = (user.equipDamage + user.power) * 1.1128 * (1+user.shengeAttack/100);
-        user.lidao = parseInt(user.power / 10) * 4;
         user.minAttack = user.minEquipAttack * 1.1128 * (1+user.shengeAttack/100);
         user.maxAttack = user.maxEquipAttack * 1.1128 * (1+user.shengeAttack/100);
         user.minDamage = user.minAttack * (1 + user.lidao/100) * (1 + user.skillAttack/100) + user.extraDamage;
         user.maxDamage = user.maxAttack * (1 + user.lidao/100) * (1 + user.skillAttack/100) + user.extraDamage;
+        user.damage = GetDamage(user);
       }
       function EquipUser(user, equip) {
         var newUser = $.extend({}, user); 
@@ -85,22 +98,27 @@
           var newDamage = GetDamage(newUser);
           var effect = (newDamage - userBasic.damage) / userBasic.damage
           $(juexingMap[juexing][1]).text(effect)
-          console.log(userBasic);
-          console.log(newUser)
         }
       }
       function UpdatePage() {
         $("#user_damage").text(userBasic.minDamage.toString() + ' - ' + userBasic.maxDamage.toString());
         $("#user_equip_attack").text(userBasic.minEquipAttack.toString() + ' - ' + userBasic.maxEquipAttack.toString());
+        $("#user_lidao").text(userBasic.lidao.toString())
         $("#user_critical_rate").text(userBasic.criticalRate);
         $("#user_critical_damage_rate").text(userBasic.criticalDamage);
         $("#user_expect_damage").text(GetDamage(userBasic));
       }
-      $(".user_input").val(0);
-      $(".user_input").keyup(function() {
+      function UpdateAll() {
           userBasic = GetUser();
           UpdateJuexing();
           UpdatePage();
+      }
+      $(".user_input").val(0);
+      $(".user_input").keyup(function() {
+        UpdateAll();
+      });
+      $("#user_job").change(function() {
+        UpdateAll();
       });
     })
   </script>
@@ -109,15 +127,18 @@
   <div id="main_content">
     <div id="user_status_input">
       <h2>用户状态输入</h2>
+      <span class="user_status_option">职业：</span><select id="user_job"><option value="power">圣堂/光刃</option><option value="dex">炎天</option></select><br>
       <span class="user_status_option">等级：</span><input class="user_input" id="user_level"/><br>
       <span class="user_status_option">面板最小伤害：</span><input class="user_input" id="user_min_damage"><br>
       <span class="user_status_option">面板最大伤害：</span><input class="user_input" id="user_max_damage"/><br>
       <span class="user_status_option">力量（智力）：</span><input class="user_input" id="user_power_potential"/> + <input class="user_input" id="user_power_other"/><br>
+      <span class="user_status_option">敏捷：</span><input class="user_input" id="user_dex_potential"/> + <input class="user_input" id="user_dex_other"/><br>
       <span class="user_status_option">附加伤害：</span><input class="user_input" id="user_extra_damage"/><br>
       <span class="user_status_option">神格激活攻击率(%):</span><input class="user_input" id="user_shenge_attack"/><br>
       <span class="user_status_option">技能攻击率(%):</span><input class="user_input" id="user_skill_attack"/><br>
       <span class="user_status_option">暴击值:</span><input class="user_input" id="user_critical_value"/><br>
       <span class="user_status_option">额外暴击率:</span><input class="user_input" id="user_extra_critical_rate"/><br>
+      <span class="user_status_option">暴击buff(%):</span><input class="user_input" id="user_critical_buff_rate"/><br>
       <span class="user_status_option">暴击加成值:</span><input class="user_input" id="user_critical_damage_value"/><br>
       <span class="user_status_option">额外暴击加成率:</span><input class="user_input" id="user_extra_critical_damage_rate"/><br>
       <span class="user_status_option">技能伤害归一化最小值:</span><input class="user_input" id="user_min_skill_damage"/><br>
@@ -127,6 +148,7 @@
       <h2>用户结果</h2>
       <span class="user_status_general">面板伤害：</span><span id="user_damage">0-0</span><br>
       <span class="user_status_general">装备攻击：</span><span id="user_equip_attack">0-0</span><br>
+      <span class="user_status_general">力道：</span><span id="user_lidao">0</span><br>
       <span class="user_status_general">暴击率：</span><span id="user_critical_rate">0</span><br>
       <span class="user_status_general">暴击加成率：</span><span id="user_critical_damage_rate">0</span><br>
       <span class="user_status_general">期望伤害：</span><span id="user_expect_damage">0</span><br>
