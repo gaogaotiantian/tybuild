@@ -37,12 +37,18 @@ if __name__ == "__main__":
             xa = [] 
             ya = []
             ya2 = []
+            min_imp = 100
             for x in range(0, total+20, 4):
                 p, imp = GetImp(x,total,fangyu)
                 if imp != -1:
                     xa.append(x/3150.0)
                     ya2.append(p)
                     ya.append(imp)
+                    if imp < min_imp:
+                        min_imp = imp
+                        min_x = x
+                        min_p = p
+            print "baoji:", min_x/3150.0, "pofang:", min_p
             ax1.plot(xa, ya)
             ax1.set_xlabel("Critical Rate")
             ax1.set_ylabel("Damage Expectation")
