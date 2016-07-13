@@ -8,8 +8,8 @@ def GetDefRate(d):
     return d/(3360.0+d)
 def GetDamageRate(d):
     return 1-GetDefRate(d)
-def GetDefImp(currDef, prevDef):
-    return 1 - GetDamageRate(currDef) / GetDamageRate(prevDef)
+def GetDefImp(currDef, prevDef, pofang):
+    return 1 - GetDamageRate(currDef*(1-pofang)) / GetDamageRate(prevDef*(1-pofang))
 # HP
 def GetHPImp(currHP, prevHP):
     return 1 - float(prevHP) / currHP
@@ -25,13 +25,13 @@ def GetCriDefImp(currCriDef, prevCriDef, Cri, CriPlus):
     return deltaRate / (Cri/3150 + 1/CriPlus)
 
 # Dodge
-def GetDodgeDamageRate(d):
-    if d/(4410.0+d) > 0.9:
-        return 0.9
-    return d/(4410.0+d)
+def GetDodgeRate(d):
+    return d/(4350.0+d*0.7)
 
-def GetDodgeImp(currDodge, prevDodge):
-    return (currDodge-prevDodge)/4410.0*0.7
+def GetDodgeImp(currDodge, prevDodge, cri, criDam):
+    currDodgeRate = GetDodgeRate(currDodge)
+    prevDodgeRate = GetDodgeRate(prevDodge)
+    return (currDodgeRate - prevDodgeRate)*0.7 / (1 + cri*criDam - prevDodgeRate * 0.3) 
 
 # Yuling
 def GetYulingDamageRate(d):
@@ -60,20 +60,21 @@ if __name__ == "__main__":
     for p in range(1, 100, 1):
         if first != True:
             xa.append(p)
-            defense.append(GetDefImp(p*DEF_CONST, lastp*DEF_CONST))
+            defense.append(GetDefImp(p*DEF_CONST, lastp*DEF_CONST, 0.75))
             HP.append(GetHPImp(p*HP_CONST, lastp*HP_CONST))
-            defCri.append(GetCriDefImp(p*CRI_DEF_CONST, lastp*CRI_DEF_CONST, 0.6, 1.9))
-            dodge.append(GetDodgeImp(p*DODGE_CONST, lastp*DODGE_CONST))
+            defCri.append(GetCriDefImp(p*CRI_DEF_CONST, lastp*CRI_DEF_CONST, 0.5, 1.6))
+            dodge.append(GetDodgeImp(p*DODGE_CONST, lastp*DODGE_CONST, 0.5, 1.6))
             yuling.append(GetYulingImp(p*YULING_CONST, lastp*YULING_CONST))
         else:
             first = False
         lastp = p
     ax1.set_xlabel(u"收益")
-    fy, = ax1.plot(defense, xa, label=u"防御")
-    hp, = ax1.plot(HP, xa, label=u"血量")
-    dc, = ax1.plot(defCri, xa, label=u"防暴")
-    ds, = ax1.plot(dodge, xa, label=u"闪避")
-    yl, = ax1.plot(yuling, xa, label=u"御灵")
+    fy, = ax1.plot(defense, xa, label=u"防御:" + str(DEF_CONST))
+    hp, = ax1.plot(HP, xa, label=u"血量:" + str(HP_CONST))
+    dc, = ax1.plot(defCri, xa, label=u"防暴:" + str(CRI_DEF_CONST))
+    ds, = ax1.plot(dodge, xa, label=u"闪避:" + str(DODGE_CONST))
+    yl, = ax1.plot(yuling, xa, label=u"御灵:" + str(YULING_CONST))
+    ax1.set_xlim([0, 0.025])
     plt.legend(handles=[fy,hp,dc,ds,yl])
     plt.show()
 
