@@ -49,7 +49,7 @@ def GetRealDodgeRate(d, cri):
 def GetDodgeImp(currDodge, prevDodge, cri, criDam):
     currDodgeRate = GetRealDodgeRate(currDodge, cri)
     prevDodgeRate = GetRealDodgeRate(prevDodge, cri)
-    return (currDodgeRate - prevDodgeRate)*1.7 / (1 + cri*criDam - prevDodgeRate * 0.3) 
+    return (currDodgeRate - prevDodgeRate)*1.7 / (1 + cri*criDam - prevDodgeRate * 0.7) 
 
 # Yuling
 def GetYulingDamageRate(d):
