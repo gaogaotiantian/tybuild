@@ -69,7 +69,7 @@
         user.CRIDAM_CONST = user.level*12.5+62.5;
         user.WS_CONST = user.level*25+125;
         user.PM_CONST = user.level*37.5+150;
-        user.criticalRate = (user.criticalValue * (1 + user.criticalBuffRate) / user.CRI_CONST + user.extraCriticalRate/100);
+        user.criticalRate = (user.criticalValue * (1 + user.criticalBuffRate/100) / user.CRI_CONST + user.extraCriticalRate/100);
         user.criticalDamage = Math.min(2, (0.5 + user.criticalDamageValue / user.CRIDAM_CONST + user.extraCriticalDamageRate/100));
         user.extraDamage = (user.equipDamage + user.power) * 1.1128 * (1+user.shengeAttack/100);
         user.minAttack = user.minEquipAttack * 1.1128 * (1+user.shengeAttack/100);
